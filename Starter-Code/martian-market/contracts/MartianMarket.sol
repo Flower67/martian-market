@@ -7,7 +7,7 @@ import './MartianAuction.sol';
 contract MartianMarket is ERC721, Ownable {
     constructor() ERC721("MartianMarket", "MARS") public {}
 
-    // cast a payable address for the Martian Development Foundation to be the beneficiary in the auction
+       // cast a payable address for the Martian Development Foundation to be the beneficiary in the auction
     // this contract is designed to have the owner of this contract (foundation) to pay for most of the function calls
     // (all but bid and withdraw)
     address payable foundationAddress = address(uint160(owner()));
@@ -22,33 +22,42 @@ contract MartianMarket is ERC721, Ownable {
     }
 
     function createAuction(uint tokenId) public onlyOwner {
-        // your code here...
+       auctions[tokenId] = new MartianAuction(foundationAddress);
     }
 
     function endAuction(uint tokenId) public onlyOwner {
         require(_exists(tokenId), "Land not registered!");
-        MartianAuction auction = getAuction(tokenId);
-        // your code here...
+        MartianAuction auction = auctions[token_id];
+        auction.auctionEnd();
+        safeTransferFrom(owner(), auction.highestBidder(), tokenId);
     }
 
     function getAuction(uint tokenId) public view returns(MartianAuction auction) {
-        // your code here...
+        return auction[tokenId];
     }
 
     function auctionEnded(uint tokenId) public view returns(bool) {
-        // your code here...
+        require(_exists(tokenId), "Incorrect Token ID, please try again.");
+        MartianAuction auction = auctions[token_id];
+        return auction.ended();
     }
 
     function highestBid(uint tokenId) public view returns(uint) {
-        // your code here...
+        require(_exists(tokenId), "Incorrect Token ID, please try again.");
+        MartianAuction auction = auctions[token_id];
+        return auction.highestBid();
     }
 
     function pendingReturn(uint tokenId, address sender) public view returns(uint) {
-        // your code here...
+        require(_exists(tokenId), "Incorrect Token ID, please try again.");
+        MartianAuction auction = auctions[token_id];
+        return auction.pendingReturn(sender);
     }
 
     function bid(uint tokenId) public payable {
-        // your code here...
+        require(_exists(tokenId), "Incorrect Token ID, please try again.");
+        MartianAuction auction = auctions[token_id];
+        auction.bid.value(msg.value)(msg.sender);
     }
 
 }
