@@ -3,10 +3,11 @@ pragma solidity ^0.6.0;
 // taken straight from the Solidity docs
 // https://solidity.readthedocs.io/en/v0.5.10/solidity-by-example.html?highlight=auction#id2
 // you must modify this to be compatible with the MartianMarket contract
-contract SimpleAuction {
+contract MartianMarket {
     // Parameters of the auction. Times are either
     // absolute unix timestamps (seconds since 1970-01-01)
     // or time periods in seconds.
+    address deployer;
     address payable public beneficiary;
     uint public auctionEndTime;
 
@@ -19,7 +20,7 @@ contract SimpleAuction {
 
     // Set to true at the end, disallows any change.
     // By default initialized to `false`.
-    bool ended;
+    bool public ended;
 
     // Events that will be emitted on changes.
     event HighestBidIncreased(address bidder, uint amount);
@@ -34,18 +35,16 @@ contract SimpleAuction {
     /// seconds bidding time on behalf of the
     /// beneficiary address `_beneficiary`.
     constructor(
-        uint _biddingTime,
         address payable _beneficiary
     ) public {
         beneficiary = _beneficiary;
-        auctionEndTime = now + _biddingTime;
     }
 
     /// Bid on the auction with the value sent
     /// together with this transaction.
     /// The value will only be refunded if the
     /// auction is not won.
-    function bid() public payable {
+    function bid(address payable sender) public payable {
         // No arguments are necessary, all
         // information is already part of
         // the transaction. The keyword payable
@@ -114,9 +113,9 @@ contract SimpleAuction {
         // external contracts.
 
         // 1. Conditions
-        require(now >= auctionEndTime, "Auction not yet ended.");
         require(!ended, "auctionEnd has already been called.");
-
+        require(msg.sender == beneficiary, "Only the beneficiary can end this auction.");
+        
         // 2. Effects
         ended = true;
         emit AuctionEnded(highestBidder, highestBid);
